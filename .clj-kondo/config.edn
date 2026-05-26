@@ -1,0 +1,9 @@
+{:linters {:deprecated-var {:level :info}
+           :docstring-leading-trailing-whitespace {:level :warning}
+           :reduce-without-init {:level :warning}
+           :redundant-fn-wrapper {:level :warning}
+           :single-key-in {:level :warning}
+           :unsorted-required-namespaces {:level :warning}
+           :used-underscored-binding {:level :warning}}
+ :config-in-comment {:linters {:clojure-lsp/unused-public-var {:level :off}
+                               :unresolved-namespace {:level :off}}}}

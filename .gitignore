@@ -1,0 +1,7 @@
+.DS_Store
+.cpcache/
+.lsp/
+.portal/
+.clj-kondo/*
+!.clj-kondo/config.edn
+.vscode/virtualTab.json

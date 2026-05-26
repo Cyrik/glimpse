@@ -1,0 +1,10 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.12.2"}}
+ :aliases {:test {:extra-paths ["test"]
+                  :extra-deps {nubank/matcher-combinators {:mvn/version "3.9.2"}}}
+
+           :test/kaocha {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}
+                         :main-opts ["-m" "kaocha.runner"]}
+
+           :splint {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.22.0"}}
+                    :main-opts ["-m" "noahtheduke.splint"]}}}

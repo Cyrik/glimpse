@@ -1,0 +1,35 @@
+{:min-bb-version "1.12.205"
+ :tasks {check {:doc "Runs all checks."
+                :depends [lint test]}
+
+         lint {:doc "Runs all linters."
+               :depends [lint:clojure-lsp lint:splint]}
+
+         lint:quick {:doc "Fast linters for commit hooks."
+                     :depends [lint]}
+
+         lint:clojure-lsp {:doc "Runs clojure-lsp diagnostics."
+                           :task (shell "clojure-lsp diagnostics --project-root .")}
+
+         lint:kondo {:doc "Alias for `lint:clojure-lsp`."
+                     :depends [lint:clojure-lsp]}
+
+         lint:splint {:doc "Runs Splint."
+                      :task (apply shell
+                                   "clojure"
+                                   "-M:splint"
+                                   (if (seq *command-line-args*)
+                                     *command-line-args*
+                                     ["src" "test"]))}
+
+         splint {:doc "Alias for `lint:splint`."
+                 :depends [lint:splint]}
+
+         test {:doc "Runs all tests."
+               :depends [test:clj]}
+
+         test:clj {:doc "Runs Clojure tests."
+                   :task (apply shell
+                                "clojure"
+                                "-M:test:test/kaocha"
+                                *command-line-args*)}}}

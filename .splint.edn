@@ -1,0 +1,6 @@
+{global {:excludes ["glob:**/.clj-kondo/**"]}
+
+ lint/prefer-method-values {:enabled false}
+
+ naming/conversion-functions {:enabled false}
+ naming/single-segment-namespace {:enabled false}}
