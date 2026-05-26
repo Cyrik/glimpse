@@ -86,5 +86,20 @@
                       (shell "git" "push")
                       (shell "git" "push" "origin" tag)
                       (println "Deploying…")
-                      (shell "bb" "deploy")
+                      (let [env (when-not (System/getenv "CLOJARS_PASSWORD")
+                                  (let [op-account "my.1password.com"
+                                        op-item "Clojars deploy — io.github.cyrik/glimpse"
+                                        read-field (fn [field]
+                                                     (str/trim
+                                                      (:out (shell {:out :string}
+                                                                   "op" "item" "get"
+                                                                   "--account" op-account
+                                                                   op-item
+                                                                   "--fields" field
+                                                                   "--reveal"))))]
+                                    {"CLOJARS_USERNAME" (read-field "username")
+                                     "CLOJARS_PASSWORD" (read-field "password")}))]
+                        (if env
+                          (shell {:extra-env env} "bb" "deploy")
+                          (shell "bb" "deploy")))
                       (println (str "Released " version))))}}}

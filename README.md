@@ -126,3 +126,25 @@ bb check
 
 `src/glimpse.clj` is the dependency-free core API. Optional integrations should
 stay in separate namespaces.
+
+## Releases
+
+After editing `CHANGELOG.md` with notes under `## Unreleased`:
+
+```sh
+bb release 0.1.0
+```
+
+The `release` task validates the version, branch (`main`), clean tree, that the
+tag doesn't already exist, and that the CHANGELOG has an `## Unreleased`
+heading; runs `bb check`; bumps `CHANGELOG.md`; commits; tags `vX.Y.Z`; pushes
+the tag; and deploys.
+
+Clojars credentials are read from a 1Password Login item titled
+`Clojars deploy — io.github.cyrik/glimpse` (Private vault, personal account)
+via the 1Password CLI. To override, set `CLOJARS_USERNAME` and
+`CLOJARS_PASSWORD` in the environment — the task respects them and skips
+1Password.
+
+Version comes from the git tag at `HEAD`; `bb deploy` refuses to publish
+SNAPSHOT versions unless `ALLOW_SNAPSHOT=1` is set.
