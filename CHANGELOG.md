@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.1 — 2026-05-27
+
 - Fixed: tracked maps now implement `IEditableCollection`, so `transient`
   works. Transient operations operate on the underlying data and return
   untracked maps.
