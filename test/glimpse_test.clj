@@ -79,6 +79,62 @@
                          [:user/address :address/city] 1}
                         (glimpse/access-counts tracked)))))))))
 
+(deftest tracked-maps-can-be-used-as-transients
+  (testing "given a tracked map"
+    (let [tracked (glimpse/track {:user/name "Alice"
+                                  :user/email nil})]
+      (testing "when code creates a transient from it"
+        (let [updated (persistent!
+                       (dissoc!
+                        (assoc! (transient tracked) :user/role "admin")
+                        :user/email))]
+          (testing "then transient map operations work without recording reads"
+            (is (match? {:user/name "Alice"
+                         :user/role "admin"}
+                        updated))
+            (is (match? {} (glimpse/access-counts tracked)))))))))
+
+(deftest java-map-interop-respects-tracking-and-contract
+  (testing "given a tracked map and an equivalent plain map"
+    (let [tracked (glimpse/track {:a 1 :c {:d 3}})
+          plain {:a 1 :c {:d 3}}]
+      (testing "when reading via java.util.Map.get"
+        (testing "then the access is recorded and nested values are wrapped"
+          (let [v (.get ^java.util.Map tracked :a)
+                nested (.get ^java.util.Map tracked :c)]
+            (is (match? 1 v))
+            (is (match? true (instance? clojure.lang.ILookup nested)))
+            (is (match? #{[:a] [:c]}
+                        (set (keys (glimpse/access-counts tracked))))))))
+      (testing "when invoking Object.equals and Object.hashCode"
+        (testing "then they match the underlying map's Java contract"
+          (is (match? true (.equals ^Object tracked plain)))
+          (is (match? true (.equals ^Object plain tracked)))
+          (is (match? (.hashCode ^Object plain) (.hashCode ^Object tracked))))))))
+
+(deftest behaves-like-a-regular-map
+  (testing "given a tracked map and an equivalent plain map"
+    (let [tracked (glimpse/track {:a 1 :b 2 :c {:d 3}})
+          plain {:a 1 :b 2 :c {:d 3}}]
+      (testing "when checking Clojure equality and hash"
+        (testing "then they're equal in both directions and hash the same"
+          (is (match? plain tracked))
+          (is (match? tracked plain))
+          (is (match? (hash plain) (hash tracked)))))
+      (testing "when reading via get and get-in"
+        (testing "then values match the plain-map shape"
+          (is (match? 1 (get tracked :a)))
+          (is (match? 3 (get-in tracked [:c :d])))))
+      (testing "when applying merge, update, and select-keys"
+        (testing "then results match the plain-map outcomes"
+          (is (match? (assoc plain :e 4) (merge tracked {:e 4})))
+          (is (match? (update plain :a inc) (update tracked :a inc)))
+          (is (match? {:a 1 :b 2} (select-keys tracked [:a :b])))))
+      (testing "when traversing with reduce-kv"
+        (testing "then every entry is visited"
+          (is (match? (set (seq plain))
+                      (set (reduce-kv (fn [acc k v] (conj acc [k v])) [] tracked)))))))))
+
 (deftest lazy-sequences-track-realized-items
   (testing "given a tracked map containing a lazy sequence of maps"
     (let [tracked (glimpse/track {:users (lazy-seq

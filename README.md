@@ -62,6 +62,15 @@ Lazy sequences are tracked as consumers realize them. If you want diagnostics fo
 every item in a lazy result, force realization with `doall`, `vec`, or the
 `:realize` option to `track-call`.
 
+Transient operations on a tracked map (`transient` / `assoc!` / `dissoc!` /
+`persistent!`) operate on the underlying data and return an untracked map.
+Tracking ends when you go transient.
+
+Tracked maps implement enough `java.util.Map` behavior for compatibility.
+`java.util.Map.get` is treated as a tracked read, but Java collection views such
+as `entrySet`, `keySet`, and `values` are compatibility-oriented and should not
+be used when you need diagnostics.
+
 ```clojure
 (glimpse/track-call
  (fn [tracked-data]

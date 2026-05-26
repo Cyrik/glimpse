@@ -103,6 +103,10 @@
   Lazy sequences are tracked as they are realized. Force realization with `doall`
   or `vec` if you want diagnostics for every item in a lazy result.
 
+  Tracked maps implement enough `java.util.Map` behavior for compatibility.
+  `java.util.Map.get` is tracked, but Java collection views such as `entrySet`,
+  `keySet`, and `values` should not be used when you need diagnostics.
+
   Example:
     (let [t (track {:user/name \"Alice\"
                     :user/email nil
@@ -172,6 +176,27 @@
     (assocEx [_ k v] (track* (.assocEx ^clojure.lang.IPersistentMap data k v) accessed-atom nil-atom missing-atom locations-atom path))
     (without [_ k] (track* (dissoc data k) accessed-atom nil-atom missing-atom locations-atom path))
 
+    clojure.lang.IEditableCollection
+    (asTransient [_] (transient data))
+
+    clojure.lang.MapEquivalence
+
+    clojure.lang.IHashEq
+    (hasheq [_] (hash data))
+
+    java.util.Map
+    (size [_] (count data))
+    (isEmpty [_] (zero? (count data)))
+    (containsValue [_ v] (.containsValue ^java.util.Map data v))
+    (get [this k] (.valAt ^clojure.lang.ILookup this k))
+    (keySet [_] (.keySet ^java.util.Map data))
+    (values [_] (.values ^java.util.Map data))
+    (entrySet [_] (.entrySet ^java.util.Map data))
+    (put [_ _ _] (throw (UnsupportedOperationException.)))
+    (remove [_ _] (throw (UnsupportedOperationException.)))
+    (putAll [_ _] (throw (UnsupportedOperationException.)))
+    (clear [_] (throw (UnsupportedOperationException.)))
+
     ITrackedAccess
     (access-counts [_] @accessed-atom)
     (nil-counts [_] @nil-atom)
@@ -179,6 +204,8 @@
     (access-locations [_] (when locations-atom @locations-atom))
 
     Object
+    (equals [_ o] (.equals ^Object data o))
+    (hashCode [_] (.hashCode ^Object data))
     (toString [_] (str data))))
 
 ;; Convenience functions
