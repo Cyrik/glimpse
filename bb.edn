@@ -32,4 +32,59 @@
                    :task (apply shell
                                 "clojure"
                                 "-M:test:test/kaocha"
-                                *command-line-args*)}}}
+                                *command-line-args*)}
+
+         clean {:doc "Removes build artifacts."
+                :task (shell "clojure -T:build clean")}
+
+         jar {:doc "Builds the library jar."
+              :task (shell "clojure -T:build jar")}
+
+         install {:doc "Installs the jar to the local ~/.m2 repo."
+                  :task (shell "clojure -T:build install")}
+
+         deploy {:doc "Deploys to Clojars. Needs CLOJARS_USERNAME and CLOJARS_PASSWORD env vars."
+                 :task (shell "clojure -T:build deploy")}
+
+         release {:doc "Cut a release. Usage: bb release X.Y.Z"
+                  :requires ([clojure.string :as str])
+                  :task
+                  (let [abort! (fn [msg]
+                                 (binding [*out* *err*] (println "error:" msg))
+                                 (System/exit 1))
+                        [version & extra] *command-line-args*]
+                    (when (or (nil? version) (seq extra))
+                      (abort! "usage: bb release X.Y.Z"))
+                    (when-not (re-matches (re-pattern "\\d+\\.\\d+\\.\\d+(-[\\w.]+)?") version)
+                      (abort! (str "invalid semver: " version)))
+                    (let [tag (str "v" version)
+                          branch (str/trim (:out (shell {:out :string} "git" "rev-parse" "--abbrev-ref" "HEAD")))]
+                      (when-not (= "main" branch)
+                        (abort! (str "not on main branch (currently on " branch ")")))
+                      (let [status (:out (shell {:out :string} "git" "status" "--porcelain"))]
+                        (when-not (str/blank? status)
+                          (abort! (str "working tree not clean:\n" status))))
+                      (when (zero? (:exit (shell {:out :string :err :string :continue true}
+                                                 "git" "rev-parse" tag)))
+                        (abort! (str "tag already exists: " tag)))
+                      (let [changelog (slurp "CHANGELOG.md")]
+                        (when-not (str/includes? changelog "## Unreleased")
+                          (abort! "CHANGELOG.md has no `## Unreleased` heading"))
+                        (println "Running checks…")
+                        (shell "bb" "check")
+                        (println "Bumping CHANGELOG…")
+                        (spit "CHANGELOG.md"
+                              (str/replace-first changelog
+                                                 "## Unreleased"
+                                                 (str "## Unreleased\n\n## " version " — " (str (java.time.LocalDate/now))))))
+                      (println "Committing…")
+                      (shell "git" "add" "CHANGELOG.md")
+                      (shell "git" "commit" "-m" (str "Release " version))
+                      (println "Tagging…")
+                      (shell "git" "tag" tag)
+                      (println "Pushing…")
+                      (shell "git" "push")
+                      (shell "git" "push" "origin" tag)
+                      (println "Deploying…")
+                      (shell "bb" "deploy")
+                      (println (str "Released " version))))}}}

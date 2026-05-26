@@ -5,3 +5,4 @@
 .clj-kondo/*
 !.clj-kondo/config.edn
 .vscode/virtualTab.json
+target/
