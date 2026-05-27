@@ -457,10 +457,10 @@
 
   (let [load-users-var (resolve 'example-load-users)]
     (with-instrumented-var-root
-     load-users-var
-     #(doseq [user (@load-users-var)]
-        (:user/name user)
-        (:user/email user))))
+      load-users-var
+      #(doseq [user (@load-users-var)]
+         (:user/name user)
+         (:user/email user))))
 
   (ns-unmap *ns* 'example-load-users)
 

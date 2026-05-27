@@ -1,6 +1,6 @@
 {:min-bb-version "1.12.205"
  :tasks {check {:doc "Runs all checks."
-                :depends [lint test]}
+                :depends [format:check lint test]}
 
          lint {:doc "Runs all linters."
                :depends [lint:clojure-lsp lint:splint]}
@@ -13,6 +13,16 @@
 
          lint:kondo {:doc "Alias for `lint:clojure-lsp`."
                      :depends [lint:clojure-lsp]}
+
+         format {:doc "Formats Clojure files with clojure-lsp."
+                 :task (do
+                         (shell "clojure-lsp clean-ns")
+                         (shell "clojure-lsp format"))}
+
+         format:check {:doc "Checks Clojure formatting without applying changes."
+                       :task (do
+                               (shell "clojure-lsp clean-ns --dry")
+                               (shell "clojure-lsp format --dry"))}
 
          lint:splint {:doc "Runs Splint."
                       :task (apply shell
@@ -33,6 +43,14 @@
                                 "clojure"
                                 "-M:test:test/kaocha"
                                 *command-line-args*)}
+
+         nrepl {:doc "Starts an nREPL server with test deps and CIDER middleware."
+                :task (shell "clojure"
+                             "-M:test:repl/nrepl"
+                             "-m"
+                             "nrepl.cmdline"
+                             "--middleware"
+                             "[cider.nrepl/cider-middleware]")}
 
          clean {:doc "Removes build artifacts."
                 :task (shell "clojure -T:build clean")}

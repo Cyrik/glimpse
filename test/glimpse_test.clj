@@ -195,10 +195,10 @@
   (testing "given a var that returns maps"
     (testing "when its root is temporarily instrumented"
       (let [analysis (glimpse/with-instrumented-var-root
-                      #'load-users
-                      #(doseq [user (load-users)]
-                         (:user/name user)
-                         (:user/email user)))
+                       #'load-users
+                       #(doseq [user (load-users)]
+                          (:user/name user)
+                          (:user/email user)))
             paths-by-path (into {} (map (juxt :path identity)) (:paths analysis))]
         (testing "then access analysis is aggregated across returned maps"
           (is (match? 2 (:item-count analysis)))

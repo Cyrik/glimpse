@@ -131,6 +131,7 @@ bb test
 bb splint
 bb lint:clojure-lsp
 bb check
+bb nrepl
 ```
 
 `src/glimpse.clj` is the dependency-free core API. Optional integrations should

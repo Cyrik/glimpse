@@ -6,3 +6,5 @@
 !.clj-kondo/config.edn
 .vscode/virtualTab.json
 target/
+.nrepl-port
+.nrepl.edn

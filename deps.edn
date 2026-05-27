@@ -6,6 +6,10 @@
            :test/kaocha {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}
                          :main-opts ["-m" "kaocha.runner"]}
 
+           :repl/nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.57.0"}
+                                     lambdaisland/kaocha {:mvn/version "1.91.1392"}
+                                     nrepl/nrepl {:mvn/version "1.4.0"}}}
+
            :splint {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.22.0"}}
                     :main-opts ["-m" "noahtheduke.splint"]}
 

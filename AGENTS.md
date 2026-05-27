@@ -32,10 +32,13 @@ names, docstrings, return shapes, and examples should be changed deliberately.
 ## Tests
 
 - Use Babashka tasks for repeatable checks:
+  - `bb format`
+  - `bb format:check`
   - `bb test`
   - `bb splint`
   - `bb lint:clojure-lsp`
   - `bb check`
+- `bb check` includes `bb format:check`; run `bb format` when formatting fails.
 - Tests live under `test/` and use `clojure.test` with matcher-combinators.
 - Prefer nested `testing` blocks in the shape `given` / `when` / `then`.
 - Prefer `(is (match? expected actual))` over raw equality assertions.
@@ -45,6 +48,8 @@ names, docstrings, return shapes, and examples should be changed deliberately.
 ## Tooling
 
 - Default to `bb` for scripts that should be kept or revisited.
+- Use `bb nrepl` for local REPL work; it starts nREPL with test deps and CIDER
+  middleware.
 - Generated local files are intentionally ignored, including `.cpcache/`, `.lsp/`,
   `.clj-kondo` generated imports/cache files, `.DS_Store`, and
   `.vscode/virtualTab.json`.
